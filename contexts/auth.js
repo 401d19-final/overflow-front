@@ -20,26 +20,29 @@ export function AuthProvider(props) {
     tokens: null,
     user: null,
     login,
-    logout,
+    logout,    
   });
 
   async function login(username, password) {
+    try{
+      const response = await axios.post(tokenUrl, { username, password });
+      console.log(response)
+      const decodedAccess = jwt.decode(response.data.access);
 
-    const response = await axios.post(tokenUrl, { username, password });
-    print(response)
-    const decodedAccess = jwt.decode(response.data.access);
-
-
-    const newState = {
-      tokens: response.data,
-      user: {
-        username: decodedAccess.username,
-        email: decodedAccess.email,
-        id: decodedAccess.user_id
-      },
-    };
-
+      const newState = {
+        tokens: response.data,
+        user: {
+          username: decodedAccess.username,
+          email: decodedAccess.email,
+          id: decodedAccess.user_id
+        },
+      };
     setState(prevState => ({ ...prevState, ...newState }));
+    }catch(err){
+      console.log(err)
+      alert("Wrong username or password")
+    }
+      
   }
 
   function logout() {
@@ -49,7 +52,7 @@ export function AuthProvider(props) {
     };
     setState(prevState => ({ ...prevState, ...newState }));
   }
-
+  
   return (
     <AuthContext.Provider value={state}>
       {props.children}
